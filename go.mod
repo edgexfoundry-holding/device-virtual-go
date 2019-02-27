@@ -1,4 +1,4 @@
-module github.com/FelixTing/device-virtual-go
+module github.com/edgexfoundry/device-virtual-go
 
 require (
 	github.com/edgexfoundry/device-sdk-go v0.0.0-20190225082215-79877e5ffe07
