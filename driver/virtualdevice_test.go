@@ -40,12 +40,6 @@ func init() {
 		}
 	}()
 
-	err := db.startTransaction()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
 	if err := db.exec(SQL_DROP_TABLE); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -75,11 +69,6 @@ func init() {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-	}
-
-	if err = db.commit(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
 	}
 }
 
@@ -120,14 +109,8 @@ func TestValue_Bool(t *testing.T) {
 	}
 
 	//EnableRandomization = false
-	if err := db.startTransaction(); err != nil {
-		t.Fatalf("Start a transaction failed: %v", err)
-	}
 	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, false, DeviceName, DeviceResource_Bool); err != nil {
 		t.Fatal(err)
-	}
-	if err := db.commit(); err != nil {
-		t.Fatalf("Commit the transaction failed: %v", err)
 	}
 
 	v1, _ = rd.value(DeviceName, DeviceResource_Bool, "", "", db)
@@ -239,13 +222,7 @@ func SubTestValueIntx(t *testing.T, dr string) {
 	}
 
 	//EnableRandomization = false
-	if err := db.startTransaction(); err != nil {
-		t.Fatalf("Start a transaction failed: %v", err)
-	}
 	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, false, DeviceName, dr); err != nil {
-		t.Fatal(err)
-	}
-	if err := db.commit(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -333,13 +310,7 @@ func SubTestValueUintx(t *testing.T, dr string) {
 	}
 
 	//EnableRandomization = false
-	if err := db.startTransaction(); err != nil {
-		t.Fatalf("Start a transaction failed: %v", err)
-	}
 	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, false, DeviceName, dr); err != nil {
-		t.Fatal(err)
-	}
-	if err := db.commit(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -421,13 +392,7 @@ func SubTestValueFloatx(t *testing.T, dr string) {
 	}
 
 	//EnableRandomization = false
-	if err := db.startTransaction(); err != nil {
-		t.Fatalf("Start a transaction failed: %v", err)
-	}
 	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, false, DeviceName, dr); err != nil {
-		t.Fatal(err)
-	}
-	if err := db.commit(); err != nil {
 		t.Fatal(err)
 	}
 

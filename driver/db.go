@@ -62,13 +62,18 @@ func (db *db) query(sqlStatement string, args ...interface{}) (*sql.Rows, error)
 }
 
 func (db *db) exec(sqlStatement string, args ...interface{}) error {
-	if db.transaction == nil {
-		return fmt.Errorf("DB transaction not found, forgot to startTransaction()?")
+	if db.connection == nil {
+		return fmt.Errorf("Lost DB connection, forgot to openDb()?")
+	}
+	if t, err := db.connection.Begin(); err != nil {
+		return fmt.Errorf("Start transaction failed: %v", err)
+	} else {
+		db.transaction = t
 	}
 	if _, err := db.transaction.Exec(sqlStatement, args...); err != nil {
 		return err
 	}
-	return nil
+	return db.transaction.Commit()
 }
 
 func (db *db) commit() error {

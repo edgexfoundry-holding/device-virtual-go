@@ -101,19 +101,6 @@ func (d *virtualDevice) value(deviceName, deviceResourceName, minimum, maximum s
 		var newValueBool bool
 		var para1 string
 
-		err := db.startTransaction()
-
-		if err != nil {
-			fmt.Println(err)
-			return "", fmt.Errorf("Start a transaction failed: %v", err)
-		}
-
-		defer func() {
-			if err = db.commit(); err != nil {
-				return
-			}
-		}()
-
 		switch data.DataType {
 		case typeBool:
 			newValueBool = randomBool()

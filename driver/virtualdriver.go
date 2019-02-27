@@ -55,12 +55,6 @@ func (d *VirtualDriver) Initialize(lc logger.LoggingClient, asyncCh chan<- *dsMo
 		}
 	}()
 
-	err := d.db.startTransaction()
-	if err != nil {
-		d.lc.Info(fmt.Sprintf("Start a transaction failed: %v", err))
-		return err
-	}
-
 	if err := d.db.exec(SQL_DROP_TABLE); err != nil {
 		d.lc.Info(fmt.Sprintf("Drop table failed: %v", err))
 		return err
@@ -94,12 +88,6 @@ func (d *VirtualDriver) Initialize(lc logger.LoggingClient, asyncCh chan<- *dsMo
 			}
 		}
 	}
-
-	if err = d.db.commit(); err != nil {
-		d.lc.Info(fmt.Sprintf("Commit transaction failed: %v", err))
-		return err
-	}
-
 	return nil
 }
 
@@ -192,12 +180,6 @@ func (d *VirtualDriver) HandleWriteCommands(addr *models.Addressable, reqs []dsM
 		}
 	}()
 
-	var err error
-	if err = d.db.startTransaction(); err != nil {
-		d.lc.Info(fmt.Sprintf("Start a transaction failed: %v", err))
-		return err
-	}
-
 	for _, param := range params {
 		if param.RO.Object == "Enable_Randomization" {
 			v, err := param.BoolValue()
@@ -211,6 +193,7 @@ func (d *VirtualDriver) HandleWriteCommands(addr *models.Addressable, reqs []dsM
 			continue
 		}
 
+		var err error
 		switch param.Type {
 		case dsModels.Bool:
 			_, err = param.BoolValue()
@@ -257,9 +240,6 @@ func (d *VirtualDriver) HandleWriteCommands(addr *models.Addressable, reqs []dsM
 				return err
 			}
 		}
-	}
-	if err := d.db.commit(); err != nil {
-		return err
 	}
 	return nil
 }
