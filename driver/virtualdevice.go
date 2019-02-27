@@ -36,12 +36,10 @@ const (
 	//defMinFloat64, defMaxFloat64 = -math.MaxFloat64, math.MaxFloat64
 	defMinFloat64, defMaxFloat64 = -100, 100
 	typeBool                     = "Bool"
-	typeInt                      = "Int"
 	typeInt8                     = "Int8"
 	typeInt16                    = "Int16"
 	typeInt32                    = "Int32"
 	typeInt64                    = "Int64"
-	typeUint                     = "Uint"
 	typeUint8                    = "Uint8"
 	typeUint16                   = "Uint16"
 	typeUint32                   = "Uint32"
@@ -416,8 +414,6 @@ func parseStrToInt(s, dt string) (int64, error) {
 	var err error
 
 	switch dt {
-	case typeInt:
-		v, err = strconv.ParseInt(s, 10, strconv.IntSize)
 	case typeInt8:
 		v, err = strconv.ParseInt(s, 10, 8)
 	case typeInt16:
@@ -442,8 +438,6 @@ func parseStrToUint(s, dt string) (uint64, error) {
 	var err error
 
 	switch dt {
-	case typeUint:
-		v, err = strconv.ParseUint(s, 10, strconv.IntSize)
 	case typeUint8:
 		v, err = strconv.ParseUint(s, 10, 8)
 	case typeUint16:

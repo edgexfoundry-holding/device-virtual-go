@@ -136,13 +136,6 @@ func (d *VirtualDriver) HandleReadCommands(addr *models.Addressable, reqs []dsMo
 		case typeBool:
 			newValue, _ := strconv.ParseBool(v)
 			cv, _ = dsModels.NewBoolValue(&req.RO, now, bool(newValue))
-		case typeInt:
-			newValue, _ := strconv.ParseInt(v, 10, strconv.IntSize)
-			if strconv.IntSize == 32 {
-				cv, _ = dsModels.NewInt32Value(&req.RO, now, int32(newValue))
-			} else {
-				cv, _ = dsModels.NewInt64Value(&req.RO, now, int64(newValue))
-			}
 		case typeInt8:
 			newValue, _ := strconv.ParseInt(v, 10, 8)
 			cv, _ = dsModels.NewInt8Value(&req.RO, now, int8(newValue))
@@ -155,13 +148,6 @@ func (d *VirtualDriver) HandleReadCommands(addr *models.Addressable, reqs []dsMo
 		case typeInt64:
 			newValue, _ := strconv.ParseInt(v, 10, 64)
 			cv, _ = dsModels.NewInt64Value(&req.RO, now, int64(newValue))
-		case typeUint:
-			newValue, _ := strconv.ParseUint(v, 10, strconv.IntSize)
-			if strconv.IntSize == 32 {
-				cv, _ = dsModels.NewUint32Value(&req.RO, now, uint32(newValue))
-			} else {
-				cv, _ = dsModels.NewUint64Value(&req.RO, now, uint64(newValue))
-			}
 		case typeUint8:
 			newValue, _ := strconv.ParseUint(v, 10, 8)
 			cv, _ = dsModels.NewUint8Value(&req.RO, now, uint8(newValue))
