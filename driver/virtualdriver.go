@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"sync"
 	"time"
 
 	sdk "github.com/edgexfoundry/device-sdk-go"
@@ -27,7 +26,6 @@ type VirtualDriver struct {
 	lc             logger.LoggingClient
 	asyncCh        chan<- *dsModels.AsyncValues
 	virtualDevices map[string]*virtualDevice
-	dbMutex        sync.Mutex
 	db             *db
 }
 
