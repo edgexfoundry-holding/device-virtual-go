@@ -11,14 +11,11 @@ package driver
 import (
 	"fmt"
 	"os"
-	"strconv"
-	"time"
+	"sync"
 
 	sdk "github.com/edgexfoundry/device-sdk-go"
 	dsModels "github.com/edgexfoundry/device-sdk-go/pkg/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logging"
-	"github.com/edgexfoundry/go-mod-core-contracts/models"
-
 	_ "modernc.org/ql/driver"
 )
 
@@ -29,8 +26,18 @@ type VirtualDriver struct {
 	db             *db
 }
 
-func (d *VirtualDriver) DisconnectDevice(address *models.Addressable) error {
-	d.lc.Info(fmt.Sprintf("VirtualDriver.DisconnectDevice: device-virtual driver is disconnecting to %v", address))
+var once sync.Once
+var driver *VirtualDriver
+
+func NewVirtualDeviceDriver() dsModels.ProtocolDriver {
+	once.Do(func() {
+		driver = new(VirtualDriver)
+	})
+	return driver
+}
+
+func (d *VirtualDriver) DisconnectDevice(deviceName string, protocols map[string]map[string]string) error {
+	d.lc.Info(fmt.Sprintf("VirtualDriver.DisconnectDevice: device-virtual driver is disconnecting to %s", deviceName))
 	return nil
 }
 
@@ -73,7 +80,7 @@ func (d *VirtualDriver) Initialize(lc logger.LoggingClient, asyncCh chan<- *dsMo
 				for _, dr := range device.Profile.DeviceResources {
 					if ro.Object == dr.Name {
 						/*
-							d.Name <-> VIRTUAL_RESOURCE.DeviceName
+							d.Name <-> VIRTUAL_RESOURCE.deviceName
 							dr.Name <-> VIRTUAL_RESOURCE.CommandName, VIRTUAL_RESOURCE.ResourceName
 							ro.Object <-> VIRTUAL_RESOURCE.DeviceResourceName
 							dr.Properties.Value.Type <-> VIRTUAL_RESOURCE.DataType
@@ -91,15 +98,14 @@ func (d *VirtualDriver) Initialize(lc logger.LoggingClient, asyncCh chan<- *dsMo
 	return nil
 }
 
-func (d *VirtualDriver) HandleReadCommands(addr *models.Addressable, reqs []dsModels.CommandRequest) (res []*dsModels.CommandValue, err error) {
-	rd, ok := d.virtualDevices[addr.Name]
+func (d *VirtualDriver) HandleReadCommands(deviceName string, protocols map[string]map[string]string, reqs []dsModels.CommandRequest) (res []*dsModels.CommandValue, err error) {
+	vd, ok := d.virtualDevices[deviceName]
 	if !ok {
-		rd = newVirtualDevice()
-		d.virtualDevices[addr.Name] = rd
+		vd = newVirtualDevice()
+		d.virtualDevices[deviceName] = vd
 	}
 
 	res = make([]*dsModels.CommandValue, len(reqs))
-	now := time.Now().UnixNano() / int64(time.Millisecond)
 
 	if err := d.db.openDb(); err != nil {
 		d.lc.Info(fmt.Sprintf("Create db connection failed: %v", err))
@@ -113,60 +119,23 @@ func (d *VirtualDriver) HandleReadCommands(addr *models.Addressable, reqs []dsMo
 	}()
 
 	for i, req := range reqs {
-		t := req.DeviceResource.Properties.Value.Type
-		v, err := rd.value(addr.Name, req.DeviceResource.Name, req.DeviceResource.Properties.Value.Minimum,
+		v, err := vd.read(&req.RO, deviceName, req.DeviceResource.Name, req.DeviceResource.Properties.Value.Minimum,
 			req.DeviceResource.Properties.Value.Maximum, d.db)
 		if err != nil {
 			return nil, err
 		}
-		var cv *dsModels.CommandValue
-		switch t {
-		case typeBool:
-			newValue, _ := strconv.ParseBool(v)
-			cv, _ = dsModels.NewBoolValue(&req.RO, now, bool(newValue))
-		case typeInt8:
-			newValue, _ := strconv.ParseInt(v, 10, 8)
-			cv, _ = dsModels.NewInt8Value(&req.RO, now, int8(newValue))
-		case typeInt16:
-			newValue, _ := strconv.ParseInt(v, 10, 16)
-			cv, _ = dsModels.NewInt16Value(&req.RO, now, int16(newValue))
-		case typeInt32:
-			newValue, _ := strconv.ParseInt(v, 10, 32)
-			cv, _ = dsModels.NewInt32Value(&req.RO, now, int32(newValue))
-		case typeInt64:
-			newValue, _ := strconv.ParseInt(v, 10, 64)
-			cv, _ = dsModels.NewInt64Value(&req.RO, now, int64(newValue))
-		case typeUint8:
-			newValue, _ := strconv.ParseUint(v, 10, 8)
-			cv, _ = dsModels.NewUint8Value(&req.RO, now, uint8(newValue))
-		case typeUint16:
-			newValue, _ := strconv.ParseUint(v, 10, 16)
-			cv, _ = dsModels.NewUint16Value(&req.RO, now, uint16(newValue))
-		case typeUint32:
-			newValue, _ := strconv.ParseUint(v, 10, 32)
-			cv, _ = dsModels.NewUint32Value(&req.RO, now, uint32(newValue))
-		case typeUint64:
-			newValue, _ := strconv.ParseUint(v, 10, 64)
-			cv, _ = dsModels.NewUint64Value(&req.RO, now, uint64(newValue))
-		case typeFloat32:
-			newValue, _ := strconv.ParseFloat(v, 32)
-			cv, _ = dsModels.NewFloat32Value(&req.RO, now, float32(newValue))
-		case typeFloat64:
-			newValue, _ := strconv.ParseFloat(v, 64)
-			cv, _ = dsModels.NewFloat64Value(&req.RO, now, float64(newValue))
-		}
-		res[i] = cv
+		res[i] = v
 	}
 
 	return res, nil
 }
 
-func (d *VirtualDriver) HandleWriteCommands(addr *models.Addressable, reqs []dsModels.CommandRequest,
+func (d *VirtualDriver) HandleWriteCommands(deviceName string, protocols map[string]map[string]string, reqs []dsModels.CommandRequest,
 	params []*dsModels.CommandValue) error {
-	rd, ok := d.virtualDevices[addr.Name]
+	vd, ok := d.virtualDevices[deviceName]
 	if !ok {
-		rd = newVirtualDevice()
-		d.virtualDevices[addr.Name] = rd
+		vd = newVirtualDevice()
+		d.virtualDevices[deviceName] = vd
 	}
 
 	if err := d.db.openDb(); err != nil {
@@ -181,64 +150,8 @@ func (d *VirtualDriver) HandleWriteCommands(addr *models.Addressable, reqs []dsM
 	}()
 
 	for _, param := range params {
-		if param.RO.Object == "Enable_Randomization" {
-			v, err := param.BoolValue()
-			if err != nil {
-				return fmt.Errorf("VirtualDriver.HandleWriteCommands: %v", err)
-			}
-			if err := d.db.exec(SQL_UPDATE_ENABLERANDOMIZATION, v, addr.Name, param.RO.Resource); err != nil {
-				d.lc.Info(fmt.Sprintf("VirtualDriver.HandleWriteCommands: %v", err))
-				return err
-			}
-			continue
-		}
-
-		var err error
-		switch param.Type {
-		case dsModels.Bool:
-			_, err = param.BoolValue()
-		case dsModels.Int8:
-			_, err = param.Int8Value()
-		case dsModels.Int16:
-			_, err = param.Int16Value()
-		case dsModels.Int32:
-			_, err = param.Int32Value()
-		case dsModels.Int64:
-			_, err = param.Int64Value()
-		case dsModels.Uint8:
-			_, err = param.Uint8Value()
-		case dsModels.Uint16:
-			_, err = param.Uint16Value()
-		case dsModels.Uint32:
-			_, err = param.Uint32Value()
-		case dsModels.Uint64:
-			_, err = param.Uint64Value()
-		case dsModels.Float32:
-			_, err = param.Float32Value()
-		case dsModels.Float64:
-			_, err = param.Float64Value()
-		default:
-			return fmt.Errorf("VirtualDriver.HandleWriteCommands: there is no matched device resource for %s", param.String())
-		}
-		if err != nil {
-			return fmt.Errorf("VirtualDriver.HandleWriteCommands: %v", err)
-		}
-
-		switch param.Type {
-		case dsModels.Float32:
-			v, _ := param.Float32Value()
-			if err = d.db.exec(SQL_UPDATE_VALUE, strconv.FormatFloat(float64(v), 'f', -1, 32), addr.Name, param.RO.Resource); err != nil {
-				return err
-			}
-		case dsModels.Float64:
-			v, _ := param.Float64Value()
-			if err = d.db.exec(SQL_UPDATE_VALUE, strconv.FormatFloat(float64(v), 'f', -1, 64), addr.Name, param.RO.Resource); err != nil {
-				return err
-			}
-		default:
-			if err = d.db.exec(SQL_UPDATE_VALUE, param.ValueToString(), addr.Name, param.RO.Resource); err != nil {
-				return err
-			}
+		if err := vd.write(param, deviceName, d.db); err != nil {
+			return err
 		}
 	}
 	return nil

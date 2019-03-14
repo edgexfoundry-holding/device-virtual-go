@@ -5,22 +5,25 @@ import (
 	"os"
 	"strconv"
 	"testing"
+
+	dsModels "github.com/edgexfoundry/device-sdk-go/pkg/models"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
 const (
-	DeviceName                                        = "Random-Value-Generator01"
-	DeviceCommandName_Bool, DeviceResource_Bool       = "RandomValue_Bool", "RandomValue_Bool"
-	DeviceCommandName_Int8, DeviceResource_Int8       = "RandomValue_Int8", "RandomValue_Int8"
-	DeviceCommandName_Int16, DeviceResource_Int16     = "RandomValue_Int16", "RandomValue_Int16"
-	DeviceCommandName_Int32, DeviceResource_Int32     = "RandomValue_Int32", "RandomValue_Int32"
-	DeviceCommandName_Int64, DeviceResource_Int64     = "RandomValue_Int64", "RandomValue_Int64"
-	DeviceCommandName_Uint8, DeviceResource_Uint8     = "RandomValue_Uint8", "RandomValue_Uint8"
-	DeviceCommandName_Uint16, DeviceResource_Uint16   = "RandomValue_Uint16", "RandomValue_Uint16"
-	DeviceCommandName_Uint32, DeviceResource_Uint32   = "RandomValue_Uint32", "RandomValue_Uint32"
-	DeviceCommandName_Uint64, DeviceResource_Uint64   = "RandomValue_Uint64", "RandomValue_Uint64"
-	DeviceCommandName_Float32, DeviceResource_Float32 = "RandomValue_Float32", "RandomValue_Float32"
-	DeviceCommandName_Float64, DeviceResource_Float64 = "RandomValue_Float64", "RandomValue_Float64"
-	EnableRandomization_True                          = "true"
+	deviceName               = "Random-Value-Generator01"
+	deviceCommandNameBool    = "RandomValue_Bool"
+	deviceCommandNameInt8    = "RandomValue_Int8"
+	deviceCommandNameInt16   = "RandomValue_Int16"
+	deviceCommandNameInt32   = "RandomValue_Int32"
+	deviceCommandNameInt64   = "RandomValue_Int64"
+	deviceCommandNameUint8   = "RandomValue_Uint8"
+	deviceCommandNameUint16  = "RandomValue_Uint16"
+	deviceCommandNameUint32  = "RandomValue_Uint32"
+	deviceCommandNameUint64  = "RandomValue_Uint64"
+	deviceCommandNameFloat32 = "RandomValue_Float32"
+	deviceCommandNameFloat64 = "RandomValue_Float64"
+	enableRandomizationTrue  = "true"
 )
 
 func init() {
@@ -51,17 +54,17 @@ func init() {
 	}
 
 	ds := [][]string{
-		{DeviceName, DeviceCommandName_Bool, DeviceResource_Bool, EnableRandomization_True, typeBool, "true"},
-		{DeviceName, DeviceCommandName_Int8, DeviceResource_Int8, EnableRandomization_True, typeInt8, "0"},
-		{DeviceName, DeviceCommandName_Int16, DeviceResource_Int16, EnableRandomization_True, typeInt16, "0"},
-		{DeviceName, DeviceCommandName_Int32, DeviceResource_Int32, EnableRandomization_True, typeInt32, "0"},
-		{DeviceName, DeviceCommandName_Int64, DeviceResource_Int64, EnableRandomization_True, typeInt64, "0"},
-		{DeviceName, DeviceCommandName_Uint8, DeviceResource_Uint8, EnableRandomization_True, typeUint8, "0"},
-		{DeviceName, DeviceCommandName_Uint16, DeviceResource_Uint16, EnableRandomization_True, typeUint16, "0"},
-		{DeviceName, DeviceCommandName_Uint32, DeviceResource_Uint32, EnableRandomization_True, typeUint32, "0"},
-		{DeviceName, DeviceCommandName_Uint64, DeviceResource_Uint64, EnableRandomization_True, typeUint64, "0"},
-		{DeviceName, DeviceCommandName_Float32, DeviceResource_Float32, EnableRandomization_True, typeFloat32, "0"},
-		{DeviceName, DeviceCommandName_Float64, DeviceResource_Float64, EnableRandomization_True, typeFloat64, "0"},
+		{deviceName, deviceCommandNameBool, deviceResourceBool, enableRandomizationTrue, typeBool, "true"},
+		{deviceName, deviceCommandNameInt8, deviceResourceInt8, enableRandomizationTrue, typeInt8, "0"},
+		{deviceName, deviceCommandNameInt16, deviceResourceInt16, enableRandomizationTrue, typeInt16, "0"},
+		{deviceName, deviceCommandNameInt32, deviceResourceInt32, enableRandomizationTrue, typeInt32, "0"},
+		{deviceName, deviceCommandNameInt64, deviceResourceInt64, enableRandomizationTrue, typeInt64, "0"},
+		{deviceName, deviceCommandNameUint8, deviceResourceUint8, enableRandomizationTrue, typeUint8, "0"},
+		{deviceName, deviceCommandNameUint16, deviceResourceUint16, enableRandomizationTrue, typeUint16, "0"},
+		{deviceName, deviceCommandNameUint32, deviceResourceUint32, enableRandomizationTrue, typeUint32, "0"},
+		{deviceName, deviceCommandNameUint64, deviceResourceUint64, enableRandomizationTrue, typeUint64, "0"},
+		{deviceName, deviceCommandNameFloat32, deviceResourceFloat32, enableRandomizationTrue, typeFloat32, "0"},
+		{deviceName, deviceCommandNameFloat64, deviceResourceFloat64, enableRandomizationTrue, typeFloat64, "0"},
 	}
 	for _, d := range ds {
 		b, _ := strconv.ParseBool(d[3])
@@ -83,14 +86,14 @@ func TestValue_Bool(t *testing.T) {
 		}
 	}()
 
-	rd := newVirtualDevice()
-	v1, err := rd.value(DeviceName, DeviceResource_Bool, "", "", db)
+	vd := newVirtualDevice()
+	v1, err := vd.read(&models.ResourceOperation{}, deviceName, deviceResourceBool, "", "", db)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	//the return string must be convertible to boolean
-	b1, err := strconv.ParseBool(v1)
+	b1, err := v1.BoolValue()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,52 +101,62 @@ func TestValue_Bool(t *testing.T) {
 	rounds := 20
 	//EnableRandomization = true
 	for x := 1; x <= rounds; x++ {
-		v2, _ := rd.value(DeviceName, DeviceResource_Bool, "", "", db)
-		b2, _ := strconv.ParseBool(v2)
+		v2, _ := vd.read(&models.ResourceOperation{}, deviceName, deviceResourceBool, "", "", db)
+		b2, _ := v2.BoolValue()
 		if b1 != b2 {
 			break
 		}
 		if x == rounds {
-			t.Fatalf("EnableRandomization is true, but got same value in %d rounds", rounds)
+			t.Fatalf("EnableRandomization is true, but got same read in %d rounds", rounds)
 		}
 	}
 
 	//EnableRandomization = false
-	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, false, DeviceName, DeviceResource_Bool); err != nil {
+	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, false, deviceName, deviceResourceBool); err != nil {
 		t.Fatal(err)
 	}
 
-	v1, _ = rd.value(DeviceName, DeviceResource_Bool, "", "", db)
-	b1, _ = strconv.ParseBool(v1)
+	v1, _ = vd.read(&models.ResourceOperation{}, deviceName, deviceResourceBool, "", "", db)
+	b1, _ = v1.BoolValue()
 	for x := 0; x <= rounds; x++ {
-		v2, _ := rd.value(DeviceName, DeviceResource_Bool, "", "", db)
-		b2, _ := strconv.ParseBool(v2)
+		v2, _ := vd.read(&models.ResourceOperation{}, deviceName, deviceResourceBool, "", "", db)
+		b2, _ := v2.BoolValue()
 		if b1 != b2 {
-			t.Fatalf("EnableRandomization is false, but got different value")
+			t.Fatalf("EnableRandomization is false, but got different read")
 		}
 	}
 }
 
 func TestValueIntx(t *testing.T) {
-	SubTestValueIntx(t, DeviceResource_Int8)
-	SubTestValueIntx(t, DeviceResource_Int16)
-	SubTestValueIntx(t, DeviceResource_Int32)
-	SubTestValueIntx(t, DeviceResource_Int64)
+	ValueIntx(t, deviceResourceInt8, "-128", "127")
+	ValueIntx(t, deviceResourceInt8, "", "")
+	ValueIntx(t, deviceResourceInt16, "-32768", "32767")
+	ValueIntx(t, deviceResourceInt16, "", "")
+	ValueIntx(t, deviceResourceInt32, "-2147483648", "2147483647")
+	ValueIntx(t, deviceResourceInt32, "", "")
+	ValueIntx(t, deviceResourceInt64, "-9223372036854775808", "9223372036854775807")
+	ValueIntx(t, deviceResourceInt64, "", "")
 }
 
 func TestValueUintx(t *testing.T) {
-	SubTestValueUintx(t, DeviceResource_Uint8)
-	SubTestValueUintx(t, DeviceResource_Uint16)
-	SubTestValueUintx(t, DeviceResource_Uint32)
-	SubTestValueUintx(t, DeviceResource_Uint64)
+	ValueUintx(t, deviceResourceUint8, "0", "255")
+	ValueUintx(t, deviceResourceUint8, "", "")
+	ValueUintx(t, deviceResourceUint16, "0", "65535")
+	ValueUintx(t, deviceResourceUint16, "", "")
+	ValueUintx(t, deviceResourceUint32, "0", "4294967295")
+	ValueUintx(t, deviceResourceUint32, "", "")
+	ValueUintx(t, deviceResourceUint64, "0", "18446744073709551615")
+	ValueUintx(t, deviceResourceUint64, "", "")
 }
 
 func TestValueFloatx(t *testing.T) {
-	SubTestValueFloatx(t, DeviceResource_Float32)
-	SubTestValueFloatx(t, DeviceResource_Float64)
+	ValueFloatx(t, deviceResourceFloat32, "-3.40282346638528859811704183484516925440e+38", "3.40282346638528859811704183484516925440e+38")
+	ValueFloatx(t, deviceResourceFloat32, "", "")
+	ValueFloatx(t, deviceResourceFloat64, "-1.797693134862315708145274237317043567981e+308", "1.797693134862315708145274237317043567981e+308")
+	ValueFloatx(t, deviceResourceFloat64, "", "")
 }
 
-func SubTestValueIntx(t *testing.T, dr string) {
+func ValueIntx(t *testing.T, dr, minStr, maxStr string) {
 	db := getDb()
 	if err := db.openDb(); err != nil {
 		t.Fatal(err)
@@ -154,47 +167,26 @@ func SubTestValueIntx(t *testing.T, dr string) {
 		}
 	}()
 
-	rd := newVirtualDevice()
-
-	var minInt, maxInt int64
-	var bitSize int
-	switch dr {
-	case DeviceResource_Int8:
-		minInt, maxInt = rd.minInt8, rd.maxInt8
-		bitSize = 8
-	case DeviceResource_Int16:
-		minInt, maxInt = rd.minInt16, rd.maxInt16
-		bitSize = 16
-	case DeviceResource_Int32:
-		minInt, maxInt = rd.minInt32, rd.maxInt32
-		bitSize = 32
-	case DeviceResource_Int64:
-		minInt, maxInt = rd.minInt64, rd.maxInt64
-		bitSize = 64
-	default:
-		t.Fatal("unknown device resource:", dr)
+	//EnableRandomization = true
+	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, true, deviceName, dr); err != nil {
+		t.Fatal(err)
 	}
 
-	if _, err := rd.value(DeviceName, dr, strconv.FormatInt(minInt-1, 10), strconv.FormatInt(maxInt, 10), db); err == nil {
-		t.Fatalf("when using the minimum value of %s to minus 1, expected to get an error", dr)
-	}
-	if _, err := rd.value(DeviceName, dr, strconv.FormatInt(minInt, 10), strconv.FormatInt(maxInt+1, 10), db); err == nil {
-		t.Fatalf("when using the maximum value of %s to plus 1, expected to get an error", dr)
-	}
+	vd := newVirtualDevice()
 
 	rounds := 100
 
-	//EnableRandomization = true
+	min, _ := parseStrToInt(minStr, 64)
+	max, _ := parseStrToInt(maxStr, 64)
+
+	var i1 int64
 	for x := 1; x <= rounds; x++ {
-		vn, err := rd.value(DeviceName, dr, strconv.FormatInt(minInt, 10), strconv.FormatInt(maxInt, 10), db)
+		vn, err := vd.read(&models.ResourceOperation{}, deviceName, dr, minStr, maxStr, db)
 		if err != nil {
 			t.Fatal(err)
 		}
-		in, err := strconv.ParseInt(vn, 10, bitSize)
-		if err != nil {
-			t.Fatal(err)
-		}
-		var i1 int64
+		in := getIntValue(vn)
+
 		if x == 1 {
 			i1 = in
 		}
@@ -202,42 +194,45 @@ func SubTestValueIntx(t *testing.T, dr string) {
 			break
 		}
 		if x == rounds {
-			t.Fatalf("EnableRandomization is true, but got same value in %d rounds", rounds)
+			t.Fatalf("EnableRandomization is true, but got same read in %d rounds", rounds)
 		}
 	}
 
-	//generate value 100 times
+	//generate read 100 times
 	for x := 1; x <= rounds; x++ {
-		v, err := rd.value(DeviceName, dr, strconv.FormatInt(minInt, 10), strconv.FormatInt(maxInt, 10), db)
+		v, err := vd.read(&models.ResourceOperation{}, deviceName, dr, minStr, maxStr, db)
+
 		if err != nil {
 			t.Fatal(err)
 		}
-		i, err := strconv.ParseInt(v, 10, bitSize)
+		i := getIntValue(v)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if i < minInt || i > maxInt {
-			t.Fatalf("random value: %d,  out of range: %d ~ %d", i, minInt, maxInt)
+		if minStr != "" && maxStr != "" {
+			if i < min || i > max {
+				t.Fatalf("random read: %d,  out of range: %s ~ %s", i, minStr, maxStr)
+			}
 		}
 	}
 
 	//EnableRandomization = false
-	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, false, DeviceName, dr); err != nil {
+	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, false, deviceName, dr); err != nil {
 		t.Fatal(err)
 	}
 
-	v1, _ := rd.value(DeviceName, dr, strconv.FormatInt(minInt, 10), strconv.FormatInt(maxInt, 10), db)
-	i1, _ := strconv.ParseInt(v1, 10, bitSize)
+	v1, _ := vd.read(&models.ResourceOperation{}, deviceName, dr, minStr, maxStr, db)
+	i1 = getIntValue(v1)
 	for x := 1; x <= rounds; x++ {
-		v2, _ := rd.value(DeviceName, dr, strconv.FormatInt(minInt, 10), strconv.FormatInt(maxInt, 10), db)
-		i2, _ := strconv.ParseInt(v2, 10, bitSize)
+		v2, _ := vd.read(&models.ResourceOperation{}, deviceName, dr, minStr, maxStr, db)
+		i2 := getIntValue(v2)
 		if i1 != i2 {
-			t.Fatalf("EnableRandomization is false, but got different value")
+			t.Fatalf("EnableRandomization is false, but got different read")
 		}
 	}
 }
 
-func SubTestValueUintx(t *testing.T, dr string) {
+func ValueUintx(t *testing.T, dr, minStr, maxStr string) {
 	db := getDb()
 	if err := db.openDb(); err != nil {
 		t.Fatal(err)
@@ -248,41 +243,23 @@ func SubTestValueUintx(t *testing.T, dr string) {
 		}
 	}()
 
-	rd := newVirtualDevice()
-
-	var minUint, maxUint uint64
-	var bitSize int
-	switch dr {
-	case DeviceResource_Uint8:
-		minUint, maxUint = rd.minUint8, rd.maxUint8
-		bitSize = 8
-	case DeviceResource_Uint16:
-		minUint, maxUint = rd.minUint16, rd.maxUint16
-		bitSize = 16
-	case DeviceResource_Uint32:
-		minUint, maxUint = rd.minUint32, rd.maxUint32
-		bitSize = 32
-	case DeviceResource_Uint64:
-		minUint, maxUint = rd.minUint64, rd.maxUint64
-		bitSize = 64
-	default:
-		t.Fatal("unknown device resource:", dr)
+	//EnableRandomization = true
+	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, true, deviceName, dr); err != nil {
+		t.Fatal(err)
 	}
 
-	if _, err := rd.value(DeviceName, dr, strconv.FormatUint(minUint-1, 10), strconv.FormatUint(maxUint, 10), db); err == nil {
-		t.Fatalf("when using the minimum value of %s to minus 1, expected to get an error", dr)
-	}
-	if _, err := rd.value(DeviceName, dr, strconv.FormatUint(minUint, 10), strconv.FormatUint(maxUint+1, 10), db); err == nil {
-		t.Fatalf("when using the maximum value of %s to plus 1, expected to get an error", dr)
-	}
+	vd := newVirtualDevice()
 
 	rounds := 100
 
-	//EnableRandomization = true
+	min, _ := parseStrToUint(minStr, 64)
+	max, _ := parseStrToUint(maxStr, 64)
+
+	var i1 uint64
 	for x := 1; x <= rounds; x++ {
-		vn, _ := rd.value(DeviceName, dr, strconv.FormatUint(minUint, 10), strconv.FormatUint(maxUint, 10), db)
-		in, _ := strconv.ParseUint(vn, 10, bitSize)
-		var i1 uint64
+		vn, _ := vd.read(&models.ResourceOperation{}, deviceName, dr, minStr, maxStr, db)
+		in := getUintValue(vn)
+
 		if x == 1 {
 			i1 = in
 		}
@@ -290,42 +267,44 @@ func SubTestValueUintx(t *testing.T, dr string) {
 			break
 		}
 		if x == rounds {
-			t.Fatalf("EnableRandomization is true, but got same value in %d rounds", rounds)
+			t.Fatalf("EnableRandomization is true, but got same read in %d rounds", rounds)
 		}
 	}
 
-	//generate value 100 times
+	//generate read 100 times
 	for x := 1; x <= rounds; x++ {
-		v, err := rd.value(DeviceName, dr, strconv.FormatUint(minUint, 10), strconv.FormatUint(maxUint, 10), db)
+		v, err := vd.read(&models.ResourceOperation{}, deviceName, dr, minStr, maxStr, db)
 		if err != nil {
 			t.Fatal(err)
 		}
-		i, err := strconv.ParseUint(v, 10, bitSize)
+		i := getUintValue(v)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if i < minUint || i > maxUint {
-			t.Fatalf("random value: %d,  out of range: %d ~ %d", i, minUint, maxUint)
+		if minStr != "" && maxStr != "" {
+			if i < min || i > max {
+				t.Fatalf("random read: %d,  out of range: %d ~ %d", i, min, max)
+			}
 		}
 	}
 
 	//EnableRandomization = false
-	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, false, DeviceName, dr); err != nil {
+	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, false, deviceName, dr); err != nil {
 		t.Fatal(err)
 	}
 
-	v1, _ := rd.value(DeviceName, dr, strconv.FormatUint(minUint, 10), strconv.FormatUint(maxUint, 10), db)
-	i1, _ := strconv.ParseUint(v1, 10, bitSize)
+	v1, _ := vd.read(&models.ResourceOperation{}, deviceName, dr, minStr, maxStr, db)
+	i1 = getUintValue(v1)
 	for x := 1; x <= rounds; x++ {
-		v2, _ := rd.value(DeviceName, dr, strconv.FormatUint(minUint, 10), strconv.FormatUint(maxUint, 10), db)
-		i2, _ := strconv.ParseUint(v2, 10, bitSize)
+		v2, _ := vd.read(&models.ResourceOperation{}, deviceName, dr, minStr, maxStr, db)
+		i2 := getUintValue(v2)
 		if i1 != i2 {
-			t.Fatalf("EnableRandomization is false, but got different value")
+			t.Fatalf("EnableRandomization is false, but got different read")
 		}
 	}
 }
 
-func SubTestValueFloatx(t *testing.T, dr string) {
+func ValueFloatx(t *testing.T, dr, minStr, maxStr string) {
 	db := getDb()
 	if err := db.openDb(); err != nil {
 		t.Fatal(err)
@@ -336,35 +315,22 @@ func SubTestValueFloatx(t *testing.T, dr string) {
 		}
 	}()
 
-	rd := newVirtualDevice()
-
-	var minFloat, maxFloat float64
-	var bitSize, prec int
-	switch dr {
-	case DeviceResource_Float32:
-		minFloat, maxFloat = rd.minFloat32, rd.maxFloat32
-		bitSize, prec = 32, 6
-	case DeviceResource_Float64:
-		minFloat, maxFloat = rd.minFloat64, rd.maxFloat64
-		bitSize, prec = 64, 15
-	default:
-		t.Fatal("unknown device resource:", dr)
+	//EnableRandomization = true
+	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, true, deviceName, dr); err != nil {
+		t.Fatal(err)
 	}
 
-	if _, err := rd.value(DeviceName, dr, strconv.FormatFloat(minFloat-1, 'f', prec, bitSize), strconv.FormatFloat(maxFloat, 'f', prec, bitSize), db); err == nil {
-		t.Fatalf("when using the minimum value of %s to minus 1, expected to get an error", dr)
-	}
-	if _, err := rd.value(DeviceName, dr, strconv.FormatFloat(minFloat, 'f', prec, bitSize), strconv.FormatFloat(maxFloat+1, 'f', prec, bitSize), db); err == nil {
-		t.Fatalf("when using the maximum value of %s to plus 1, expected to get an error", dr)
-	}
+	vd := newVirtualDevice()
 
 	rounds := 100
 
-	//EnableRandomization = true
+	min, _ := parseStrToFloat(minStr, 64)
+	max, _ := parseStrToFloat(maxStr, 64)
+
+	var f1 float64
 	for x := 1; x <= rounds; x++ {
-		vn, _ := rd.value(DeviceName, dr, strconv.FormatFloat(minFloat, 'f', prec, bitSize), strconv.FormatFloat(maxFloat, 'f', prec, bitSize), db)
-		fn, _ := strconv.ParseFloat(vn, bitSize)
-		var f1 float64
+		vn, _ := vd.read(&models.ResourceOperation{}, deviceName, dr, minStr, maxStr, db)
+		fn := getFloatValue(vn)
 		if x == 1 {
 			f1 = fn
 		}
@@ -372,37 +338,90 @@ func SubTestValueFloatx(t *testing.T, dr string) {
 			break
 		}
 		if x == rounds {
-			t.Fatalf("EnableRandomization is true, but got same value in %d rounds", rounds)
+			t.Fatalf("EnableRandomization is true, but got same read in %d rounds", rounds)
 		}
 	}
 
-	//generate value 100 times
+	//generate read 100 times
 	for x := 1; x <= rounds; x++ {
-		v, err := rd.value(DeviceName, dr, strconv.FormatFloat(minFloat, 'f', prec, bitSize), strconv.FormatFloat(maxFloat, 'f', prec, bitSize), db)
+		v, err := vd.read(&models.ResourceOperation{}, deviceName, dr, minStr, maxStr, db)
 		if err != nil {
 			t.Fatal(err)
 		}
-		f, err := strconv.ParseFloat(v, bitSize)
+		f := getFloatValue(v)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if f < minFloat || f > maxFloat {
-			t.Fatalf("random value: %f,  out of range: %f ~ %f", f, minFloat, maxFloat)
+		if minStr != "" && maxStr != "" {
+			if f < min || f > max {
+				t.Fatalf("random read: %f,  out of range: %f ~ %f", f, min, max)
+			}
 		}
 	}
 
 	//EnableRandomization = false
-	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, false, DeviceName, dr); err != nil {
+	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, false, deviceName, dr); err != nil {
 		t.Fatal(err)
 	}
 
-	v1, _ := rd.value(DeviceName, dr, strconv.FormatFloat(minFloat, 'f', prec, bitSize), strconv.FormatFloat(maxFloat, 'f', prec, bitSize), db)
-	f1, _ := strconv.ParseFloat(v1, bitSize)
+	v1, _ := vd.read(&models.ResourceOperation{}, deviceName, dr, minStr, maxStr, db)
+	f1 = getFloatValue(v1)
 	for x := 1; x <= rounds; x++ {
-		v2, _ := rd.value(DeviceName, dr, strconv.FormatFloat(minFloat, 'f', prec, bitSize), strconv.FormatFloat(maxFloat, 'f', prec, bitSize), db)
-		f2, _ := strconv.ParseFloat(v2, bitSize)
+		v2, _ := vd.read(&models.ResourceOperation{}, deviceName, dr, minStr, maxStr, db)
+		f2 := getFloatValue(v2)
 		if f1 != f2 {
-			t.Fatalf("EnableRandomization is false, but got different value")
+			t.Fatalf("EnableRandomization is false, but got different read")
 		}
+	}
+}
+
+func getIntValue(cv *dsModels.CommandValue) int64 {
+	switch cv.Type {
+	case dsModels.Int8:
+		v, _ := cv.Int8Value()
+		return int64(v)
+	case dsModels.Int16:
+		v, _ := cv.Int16Value()
+		return int64(v)
+	case dsModels.Int32:
+		v, _ := cv.Int32Value()
+		return int64(v)
+	case dsModels.Int64:
+		v, _ := cv.Int64Value()
+		return v
+	default:
+		return 0
+	}
+}
+
+func getUintValue(cv *dsModels.CommandValue) uint64 {
+	switch cv.Type {
+	case dsModels.Uint8:
+		v, _ := cv.Uint8Value()
+		return uint64(v)
+	case dsModels.Uint16:
+		v, _ := cv.Uint16Value()
+		return uint64(v)
+	case dsModels.Uint32:
+		v, _ := cv.Uint32Value()
+		return uint64(v)
+	case dsModels.Uint64:
+		v, _ := cv.Uint64Value()
+		return v
+	default:
+		return 0
+	}
+}
+
+func getFloatValue(cv *dsModels.CommandValue) float64 {
+	switch cv.Type {
+	case dsModels.Float32:
+		v, _ := cv.Float32Value()
+		return float64(v)
+	case dsModels.Float64:
+		v, _ := cv.Float64Value()
+		return v
+	default:
+		return 0
 	}
 }

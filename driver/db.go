@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strconv"
 	"sync"
 )
 
@@ -12,6 +13,15 @@ const (
 	qlDatabaseDir        = "db"
 	qlDatabaseName       = "/deviceVirtual.db"
 )
+
+var data struct {
+	DeviceName          string
+	CommandName         string
+	DeviceResourceName  string
+	EnableRandomization string
+	DataType            string
+	Value               string
+}
 
 type db struct {
 	driverName  string
@@ -94,4 +104,31 @@ func (db *db) closeDb() error {
 		db.connection = nil
 	}()
 	return db.connection.Close()
+}
+
+func (db *db) getVirtualResourceData(deviceName, deviceResourceName string) (bool, string, string, error) {
+	rows, err := db.query(SQL_SELECT, deviceName, deviceResourceName)
+	if err != nil {
+		return false, "", "", err
+	}
+	if rows.Next() {
+		if err = rows.Scan(&data.DeviceName, &data.CommandName, &data.DeviceResourceName, &data.EnableRandomization, &data.DataType, &data.Value); err != nil {
+			rows.Close()
+			return false, "", "", err
+		}
+		rows.Close()
+	}
+
+	enableRandomization, err := strconv.ParseBool(data.EnableRandomization)
+	if err != nil {
+		return false, "", "", err
+	}
+	return enableRandomization, data.Value, data.DataType, nil
+}
+
+func (db *db) updateResourceValue(param, deviceName, deviceResourceName string) error {
+	if err := db.exec(SQL_UPDATE_VALUE, param, deviceName, deviceResourceName); err != nil {
+		return err
+	}
+	return nil
 }
