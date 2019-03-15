@@ -19,7 +19,7 @@ deviceResources:
   description: "Generate random uint8 value"
   properties:
     value:
-      { type: "Uint8", readWrite: "R", minimum: "0", maximum: "100", defaultValue: "0" }
+      { type: "Uint8", readWrite: "R", defaultValue: "0" }
     units:
       { type: "String", readWrite: "R", defaultValue: "random uint8 value" }
 -
@@ -27,7 +27,7 @@ deviceResources:
   description: "Generate random uint16 value"
   properties:
     value:
-      { type: "Uint16", readWrite: "R", minimum: "0", maximum: "100", defaultValue: "0" }
+      { type: "Uint16", readWrite: "R", defaultValue: "0" }
     units:
       { type: "String", readWrite: "R", defaultValue: "random uint16 value" }
 -
@@ -35,17 +35,9 @@ deviceResources:
   description: "Generate random uint32 value"
   properties:
     value:
-      { type: "Uint32", readWrite: "R", minimum: "0", maximum: "100", defaultValue: "0" }
+      { type: "Uint32", readWrite: "R", defaultValue: "0" }
     units:
       { type: "String", readWrite: "R", defaultValue: "random uint32 value" }
--
-  name: "RandomValue_Uint64"
-  description: "Generate random uint64 value"
-  properties:
-    value:
-      { type: "Uint64", readWrite: "R", minimum: "0", maximum: "100", defaultValue: "0" }
-    units:
-      { type: "String", readWrite: "R", defaultValue: "random uint64 value" }
 
 resources:
 -
@@ -69,13 +61,6 @@ resources:
   set:
   - { operation: "set", object: "RandomValue_Uint32", property: "value", parameter: "RandomValue_Uint32", resource: "RandomValue_Uint32" }
   - { operation: "set", object: "Enable_Randomization", property: "value", parameter: "Enable_Randomization", resource: "RandomValue_Uint32" }
--
-  name: "RandomValue_Uint64"
-  get:
-  - { operation: "get", object: "RandomValue_Uint64", property: "value", parameter: "RandomValue_Uint64" }
-  set:
-  - { operation: "set", object: "RandomValue_Uint64", property: "value", parameter: "RandomValue_Uint64", resource: "RandomValue_Uint64" }
-  - { operation: "set", object: "Enable_Randomization", property: "value", parameter: "Enable_Randomization", resource: "RandomValue_Uint64" }
 
 commands:
 -
@@ -140,29 +125,6 @@ commands:
   put:
     path: "/api/v1/device/{deviceId}/RandomValue_Uint32"
     parameterNames: ["RandomValue_Uint32","Enable_Randomization"]
-    responses:
-      -
-        code: "200"
-        description: ""
-      -
-        code: "503"
-        description: "service unavailable"
--
-  name: "RandomValue_Uint64"
-  get:
-    path: "/api/v1/device/{deviceId}/RandomValue_Uint64"
-    responses:
-      -
-        code: "200"
-        description: ""
-        expectedValues: ["RandomValue_Uint64"]
-      -
-        code: "503"
-        description: "service unavailable"
-        expectedValues: []
-  put:
-    path: "/api/v1/device/{deviceId}/RandomValue_Uint64"
-    parameterNames: ["RandomValue_Uint64","Enable_Randomization"]
     responses:
       -
         code: "200"

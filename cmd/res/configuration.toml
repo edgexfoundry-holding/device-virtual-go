@@ -10,11 +10,19 @@ EnableAsyncReadings = true
 AsyncBufferSize = 16
 
 [Registry]
+Type = "consul"
 Host = "localhost"
 Port = 8500
 CheckInterval = "10s"
 FailLimit = 3
 FailWaitTime = 10
+
+[Logging]
+EnableRemote = false
+File = "./device-virtual.log"
+
+[Writable]
+LogLevel = 'INFO'
 
 [Clients]
   [Clients.Data]
@@ -47,114 +55,40 @@ FailWaitTime = 10
   RemoveCmdArgs = ""
   ProfilesDir = "./res"
 
-[Logging]
-EnableRemote = false
-File = "./device-virtual.log"
-Level = "INFO"
-
 # Pre-define Devices
 [[DeviceList]]
   Name = "Random-Boolean-Generator01"
   Profile = "Random-Boolean-Generator"
   Description = "Example of Device Virtual"
   Labels = [ "device-virtual-example" ]
-  [DeviceList.Addressable]
-    Address = "device-virtual-bool-01"
-    Protocol = "OTHER"
+  [DeviceList.Protocols]
+    [DeviceList.Protocols.other]
+      Address = "device-virtual-bool-01"
+      Port = "300"
 [[DeviceList]]
   Name = "Random-Integer-Generator01"
   Profile = "Random-Integer-Generator"
   Description = "Example of Device Virtual"
   Labels = [ "device-virtual-example" ]
-  [DeviceList.Addressable]
-    Address = "device-virtual-int-01"
-    Protocol = "OTHER"
+  [DeviceList.Protocols]
+    [DeviceList.Protocols.other]
+      Address = "device-virtual-int-01"
+      Protocol = "300"
 [[DeviceList]]
   Name = "Random-UnsignedInteger-Generator01"
   Profile = "Random-UnsignedInteger-Generator"
   Description = "Example of Device Virtual"
   Labels = [ "device-virtual-example" ]
-  [DeviceList.Addressable]
-    Address = "device-virtual-uint-01"
-    Protocol = "OTHER"
+  [DeviceList.Protocols]
+    [DeviceList.Protocols.other]
+      Address = "device-virtual-uint-01"
+      Protocol = "300"
 [[DeviceList]]
   Name = "Random-Float-Generator01"
   Profile = "Random-Float-Generator"
   Description = "Example of Device Virtual"
   Labels = [ "device-virtual-example" ]
-  [DeviceList.Addressable]
-    Address = "device-virtual-float-01"
-    Protocol = "OTHER"
-
-
-# Pre-define Schedule Configuration
-[[Schedules]]
-Name = "5sec-schedule"
-Frequency = "PT5S"
-
-[[ScheduleEvents]]
-Name = "readValue_bool"
-Schedule = "5sec-schedule"
-  [ScheduleEvents.Addressable]
-  HTTPMethod = "GET"
-  Path = "/api/v1/device/name/Random-Boolean-Generator01/RandomValue_Bool"
-[[ScheduleEvents]]
-Name = "readValue_int8"
-Schedule = "5sec-schedule"
-  [ScheduleEvents.Addressable]
-  HTTPMethod = "GET"
-  Path = "/api/v1/device/name/Random-Integer-Generator01/RandomValue_Int8"
-[[ScheduleEvents]]
-Name = "readValue_int16"
-Schedule = "5sec-schedule"
-  [ScheduleEvents.Addressable]
-  HTTPMethod = "GET"
-  Path = "/api/v1/device/name/Random-Integer-Generator01/RandomValue_Int16"
-[[ScheduleEvents]]
-Name = "readValue_int32"
-Schedule = "5sec-schedule"
-  [ScheduleEvents.Addressable]
-  HTTPMethod = "GET"
-  Path = "/api/v1/device/name/Random-Integer-Generator01/RandomValue_Int32"
-[[ScheduleEvents]]
-Name = "readValue_int64"
-Schedule = "5sec-schedule"
-  [ScheduleEvents.Addressable]
-  HTTPMethod = "GET"
-  Path = "/api/v1/device/name/Random-Integer-Generator01/RandomValue_Int64"
-[[ScheduleEvents]]
-Name = "readValue_uint8"
-Schedule = "5sec-schedule"
-  [ScheduleEvents.Addressable]
-  HTTPMethod = "GET"
-  Path = "/api/v1/device/name/Random-UnsignedInteger-Generator01/RandomValue_Uint8"
-[[ScheduleEvents]]
-Name = "readValue_uint16"
-Schedule = "5sec-schedule"
-  [ScheduleEvents.Addressable]
-  HTTPMethod = "GET"
-  Path = "/api/v1/device/name/Random-UnsignedInteger-Generator01/RandomValue_Uint16"
-[[ScheduleEvents]]
-Name = "readValue_uint32"
-Schedule = "5sec-schedule"
-  [ScheduleEvents.Addressable]
-  HTTPMethod = "GET"
-  Path = "/api/v1/device/name/Random-UnsignedInteger-Generator01/RandomValue_Uint32"
-[[ScheduleEvents]]
-Name = "readValue_uint64"
-Schedule = "5sec-schedule"
-  [ScheduleEvents.Addressable]
-  HTTPMethod = "GET"
-  Path = "/api/v1/device/name/Random-UnsignedInteger-Generator01/RandomValue_Uint64"
-[[ScheduleEvents]]
-Name = "readValue_float32"
-Schedule = "5sec-schedule"
-  [ScheduleEvents.Addressable]
-  HTTPMethod = "GET"
-  Path = "/api/v1/device/name/Random-Float-Generator01/RandomValue_Float32"
-[[ScheduleEvents]]
-Name = "readValue_float64"
-Schedule = "5sec-schedule"
-  [ScheduleEvents.Addressable]
-  HTTPMethod = "GET"
-  Path = "/api/v1/device/name/Random-Float-Generator01/RandomValue_Float64"
+  [DeviceList.Protocols]
+    [DeviceList.Protocols.other]
+      Address = "device-virtual-float-01"
+      Protocol = "300"

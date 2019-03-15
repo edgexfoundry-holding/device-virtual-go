@@ -19,17 +19,9 @@ deviceResources:
   description: "Generate random float32 value"
   properties:
     value:
-      { type: "Float32", readWrite: "R", minimum: "0", maximum: "100", defaultValue: "3.14159" }
+      { type: "Float32", readWrite: "R", defaultValue: "0" }
     units:
       { type: "String", readWrite: "R", defaultValue: "random float32 value" }
--
-  name: "RandomValue_Float64"
-  description: "Generate random float64 value"
-  properties:
-    value:
-      { type: "Float64", readWrite: "R", minimum: "0", maximum: "100", defaultValue: "3.14159265359" }
-    units:
-      { type: "String", readWrite: "R", defaultValue: "random float64 value" }
 
 resources:
 -
@@ -39,13 +31,6 @@ resources:
   set:
     - { operation: "set", object: "RandomValue_Float32", property: "value", parameter: "RandomValue_Float32", resource: "RandomValue_Float32" }
     - { operation: "set", object: "Enable_Randomization", property: "value", parameter: "Enable_Randomization", resource: "RandomValue_Float32" }
--
-  name: "RandomValue_Float64"
-  get:
-    - { operation: "get", object: "RandomValue_Float64", property: "value", parameter: "RandomValue_Float64" }
-  set:
-    - { operation: "set", object: "RandomValue_Float64", property: "value", parameter: "RandomValue_Float64", resource: "RandomValue_Float64" }
-    - { operation: "set", object: "Enable_Randomization", property: "value", parameter: "Enable_Randomization", resource: "RandomValue_Float64" }
 
 commands:
 -
@@ -64,29 +49,6 @@ commands:
   put:
     path: "/api/v1/device/{deviceId}/RandomValue_Float32"
     parameterNames: ["RandomValue_Float32","Enable_Randomization"]
-    responses:
-      -
-        code: "200"
-        description: ""
-      -
-        code: "503"
-        description: "service unavailable"
--
-  name: "RandomValue_Float64"
-  get:
-    path: "/api/v1/device/{deviceId}/RandomValue_Float64"
-    responses:
-      -
-        code: "200"
-        description: ""
-        expectedValues: ["RandomValue_Float64"]
-      -
-        code: "503"
-        description: "service unavailable"
-        expectedValues: []
-  put:
-    path: "/api/v1/device/{deviceId}/RandomValue_Float64"
-    parameterNames: ["RandomValue_Float64","Enable_Randomization"]
     responses:
       -
         code: "200"
