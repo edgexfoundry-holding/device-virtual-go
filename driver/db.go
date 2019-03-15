@@ -132,3 +132,10 @@ func (db *db) updateResourceValue(param, deviceName, deviceResourceName string) 
 	}
 	return nil
 }
+
+func (db *db) updateResourceEnableRandomization(param bool, deviceName, deviceResourceName string) error {
+	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, param, deviceName, deviceResourceName); err != nil {
+		return err
+	}
+	return nil
+}

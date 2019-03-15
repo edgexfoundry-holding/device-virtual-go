@@ -64,14 +64,14 @@ func (d *virtualDevice) read(ro *models.ResourceOperation, deviceName, deviceRes
 }
 
 func (d *virtualDevice) write(param *dsModels.CommandValue, deviceName string, db *db) error {
-	switch param.Type {
-	case dsModels.Bool:
+	switch param.RO.Resource {
+	case deviceResourceBool:
 		return d.resourceBool.write(param, deviceName, db)
-	case dsModels.Int8, dsModels.Int16, dsModels.Int32, dsModels.Int64:
+	case deviceResourceInt8, deviceResourceInt16, deviceResourceInt32, deviceResourceInt64:
 		return d.resourceInt.write(param, deviceName, db)
-	case dsModels.Uint8, dsModels.Uint16, dsModels.Uint32, dsModels.Uint64:
+	case deviceResourceUint8, deviceResourceUint16, deviceResourceUint32, deviceResourceUint64:
 		return d.resourceUint.write(param, deviceName, db)
-	case dsModels.Float32, dsModels.Float64:
+	case deviceResourceFloat32, deviceResourceFloat64:
 		return d.resourceFloat.write(param, deviceName, db)
 	default:
 		return fmt.Errorf("VirtualDriver.HandleWriteCommands: there is no matched device resource for %s", param.String())

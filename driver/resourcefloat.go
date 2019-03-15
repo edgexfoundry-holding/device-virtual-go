@@ -111,20 +111,20 @@ func (rf *resourceFloat) write(param *dsModels.CommandValue, deviceName string, 
 		if err != nil {
 			return fmt.Errorf("resourceFloat.write: %v", err)
 		}
-		if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, v, deviceName, param.RO.Resource); err != nil {
+		if err := db.updateResourceEnableRandomization(v, deviceName, param.RO.Resource); err != nil {
 			return fmt.Errorf("resourceFloat.write: %v", err)
 		} else {
 			return nil
 		}
 	case deviceResourceFloat32:
 		if v, err := param.Float32Value(); err == nil {
-			return db.exec(SQL_UPDATE_VALUE, strconv.FormatFloat(float64(v), 'f', -1, 32), deviceName, param.RO.Resource)
+			return db.updateResourceValue(strconv.FormatFloat(float64(v), 'f', -1, 32), deviceName, param.RO.Resource)
 		} else {
 			return err
 		}
 	case deviceResourceFloat64:
 		if v, err := param.Float64Value(); err == nil {
-			return db.exec(SQL_UPDATE_VALUE, strconv.FormatFloat(float64(v), 'f', -1, 64), deviceName, param.RO.Resource)
+			return db.updateResourceValue(strconv.FormatFloat(float64(v), 'f', -1, 64), deviceName, param.RO.Resource)
 		} else {
 			return err
 		}

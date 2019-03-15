@@ -29,7 +29,7 @@ resources:
   get:
     - { operation: "get", object: "RandomValue_Bool", property: "value", parameter: "RandomValue_Bool" }
   set:
-    - { operation: "set", object: "Enable_Randomization", property: "value", parameter: "Enable_Randomization", resource: "Enable_Randomization" }
+    - { operation: "set", object: "Enable_Randomization", property: "value", parameter: "Enable_Randomization", resource: "RandomValue_Bool" }
     - { operation: "set", object: "RandomValue_Bool", property: "value", parameter: "RandomValue_Bool", resource: "RandomValue_Bool" }
 
 commands:
