@@ -154,7 +154,7 @@ func (ri *resourceInt) write(param *dsModels.CommandValue, deviceName string, db
 		if err != nil {
 			return fmt.Errorf("resourceBool.write: %v", err)
 		}
-		if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, v, deviceName, param.RO.Resource); err != nil {
+		if err := db.updateResourceEnableRandomization(v, deviceName, param.RO.Resource); err != nil {
 			return fmt.Errorf("resourceBool.write: %v", err)
 		} else {
 			return nil
@@ -172,7 +172,7 @@ func (ri *resourceInt) write(param *dsModels.CommandValue, deviceName string, db
 	}
 
 	if err == nil {
-		return db.exec(SQL_UPDATE_VALUE, param.ValueToString(), deviceName, param.RO.Resource)
+		return db.updateResourceValue(param.ValueToString(), deviceName, param.RO.Resource)
 	} else {
 		return err
 	}
