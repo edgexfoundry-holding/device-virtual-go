@@ -15,6 +15,7 @@ import (
 
 	sdk "github.com/edgexfoundry/device-sdk-go"
 	dsModels "github.com/edgexfoundry/device-sdk-go/pkg/models"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logging"
 	_ "modernc.org/ql/driver"
 )
@@ -36,7 +37,7 @@ func NewVirtualDeviceDriver() dsModels.ProtocolDriver {
 	return driver
 }
 
-func (d *VirtualDriver) DisconnectDevice(deviceName string, protocols map[string]map[string]string) error {
+func (d *VirtualDriver) DisconnectDevice(deviceName string, protocols map[string]models.ProtocolProperties) error {
 	d.lc.Info(fmt.Sprintf("VirtualDriver.DisconnectDevice: device-virtual driver is disconnecting to %s", deviceName))
 	return nil
 }
@@ -98,7 +99,7 @@ func (d *VirtualDriver) Initialize(lc logger.LoggingClient, asyncCh chan<- *dsMo
 	return nil
 }
 
-func (d *VirtualDriver) HandleReadCommands(deviceName string, protocols map[string]map[string]string, reqs []dsModels.CommandRequest) (res []*dsModels.CommandValue, err error) {
+func (d *VirtualDriver) HandleReadCommands(deviceName string, protocols map[string]models.ProtocolProperties, reqs []dsModels.CommandRequest) (res []*dsModels.CommandValue, err error) {
 	vd, ok := d.virtualDevices[deviceName]
 	if !ok {
 		vd = newVirtualDevice()
@@ -130,7 +131,7 @@ func (d *VirtualDriver) HandleReadCommands(deviceName string, protocols map[stri
 	return res, nil
 }
 
-func (d *VirtualDriver) HandleWriteCommands(deviceName string, protocols map[string]map[string]string, reqs []dsModels.CommandRequest,
+func (d *VirtualDriver) HandleWriteCommands(deviceName string, protocols map[string]models.ProtocolProperties, reqs []dsModels.CommandRequest,
 	params []*dsModels.CommandValue) error {
 	vd, ok := d.virtualDevices[deviceName]
 	if !ok {
