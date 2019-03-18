@@ -6,5 +6,13 @@
 
 package device_virtual
 
+import "io/ioutil"
+
 // Global version for device-sdk-go
-const Version string = "1.0.0"
+func GetVersion() string {
+	if b, err := ioutil.ReadFile("../VERSION"); err != nil {
+		return ""
+	} else {
+		return string(b)
+	}
+}

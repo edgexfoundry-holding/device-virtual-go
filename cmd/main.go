@@ -13,11 +13,10 @@ import (
 )
 
 const (
-	version     string = device_virtual.Version
 	serviceName string = "device-virtual"
 )
 
 func main() {
 	d := driver.NewVirtualDeviceDriver()
-	startup.Bootstrap(serviceName, version, d)
+	startup.Bootstrap(serviceName, device_virtual.GetVersion(), d)
 }
