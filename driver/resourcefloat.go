@@ -2,6 +2,7 @@ package driver
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"strconv"
 	"time"
@@ -24,7 +25,6 @@ func (rf *resourceFloat) value(db *db, ro *models.ResourceOperation, deviceName,
 
 	now := time.Now().UnixNano() / int64(time.Millisecond)
 	rand.Seed(time.Now().UnixNano())
-	signHelper := []float64{-1, 1}
 	var newValueFloat float64
 	var bitSize int
 	min, max, err := parseFloatMinimumMaximum(minimum, maximum, dataType)
@@ -36,7 +36,7 @@ func (rf *resourceFloat) value(db *db, ro *models.ResourceOperation, deviceName,
 			if err == nil {
 				newValueFloat = randomFloat(min, max)
 			} else {
-				newValueFloat = float64(rand.Float32()) * signHelper[rand.Int()%2]
+				newValueFloat = randomFloat(float64(-math.MaxFloat32), float64(math.MaxFloat32))
 			}
 		} else if newValueFloat, err = strconv.ParseFloat(currentValue, 32); err != nil {
 			return result, err
@@ -48,7 +48,7 @@ func (rf *resourceFloat) value(db *db, ro *models.ResourceOperation, deviceName,
 			if err == nil {
 				newValueFloat = randomFloat(min, max)
 			} else {
-				newValueFloat = rand.Float64() * signHelper[rand.Int()%2]
+				newValueFloat = randomFloat(float64(-math.MaxFloat64), float64(math.MaxFloat64))
 			}
 		} else if newValueFloat, err = strconv.ParseFloat(currentValue, 64); err != nil {
 			return result, err
@@ -59,7 +59,7 @@ func (rf *resourceFloat) value(db *db, ro *models.ResourceOperation, deviceName,
 	if err != nil {
 		return result, err
 	}
-	err = db.updateResourceValue(strconv.FormatFloat(newValueFloat, 'f', -1, bitSize), data.DeviceName, data.DeviceResourceName, false)
+	err = db.updateResourceValue(strconv.FormatFloat(newValueFloat, 'e', -1, bitSize), data.DeviceName, data.DeviceResourceName, false)
 	return result, err
 }
 
@@ -119,11 +119,15 @@ func (rf *resourceFloat) write(param *dsModels.CommandValue, deviceName string, 
 		}
 	case deviceResourceFloat32:
 		if v, err := param.Float32Value(); err == nil {
-			err = db.updateResourceValue(strconv.FormatFloat(float64(v), 'f', -1, 32), deviceName, param.RO.Resource, true)
+			return db.updateResourceValue(strconv.FormatFloat(float64(v), 'e', -1, 32), deviceName, param.RO.Resource, true)
+		} else {
+			return err
 		}
 	case deviceResourceFloat64:
 		if v, err := param.Float64Value(); err == nil {
-			err = db.updateResourceValue(strconv.FormatFloat(float64(v), 'f', -1, 64), deviceName, param.RO.Resource, true)
+			return db.updateResourceValue(strconv.FormatFloat(float64(v), 'e', -1, 64), deviceName, param.RO.Resource, true)
+		} else {
+			return err
 		}
 	default:
 		err = fmt.Errorf("resourceFloat.write: unknown device resource: %s", param.RO.Object)
