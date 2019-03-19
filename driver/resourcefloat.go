@@ -59,7 +59,7 @@ func (rf *resourceFloat) value(db *db, ro *models.ResourceOperation, deviceName,
 	if err != nil {
 		return result, err
 	}
-	err = db.updateResourceValue(strconv.FormatFloat(newValueFloat, 'f', -1, bitSize), data.DeviceName, data.DeviceResourceName)
+	err = db.updateResourceValue(strconv.FormatFloat(newValueFloat, 'f', -1, bitSize), data.DeviceName, data.DeviceResourceName, false)
 	return result, err
 }
 
@@ -105,30 +105,33 @@ func parseFloatMinimumMaximum(minimum, maximum, dataType string) (float64, float
 }
 
 func (rf *resourceFloat) write(param *dsModels.CommandValue, deviceName string, db *db) error {
+	var err error
 	switch param.RO.Object {
 	case deviceResourceEnableRandomization:
 		v, err := param.BoolValue()
 		if err != nil {
 			return fmt.Errorf("resourceFloat.write: %v", err)
 		}
-		if err := db.updateResourceEnableRandomization(v, deviceName, param.RO.Resource); err != nil {
+		if err := db.updateResourceRandomization(v, deviceName, param.RO.Resource); err != nil {
 			return fmt.Errorf("resourceFloat.write: %v", err)
 		} else {
 			return nil
 		}
 	case deviceResourceFloat32:
 		if v, err := param.Float32Value(); err == nil {
-			return db.updateResourceValue(strconv.FormatFloat(float64(v), 'f', -1, 32), deviceName, param.RO.Resource)
-		} else {
-			return err
+			err = db.updateResourceValue(strconv.FormatFloat(float64(v), 'f', -1, 32), deviceName, param.RO.Resource, true)
 		}
 	case deviceResourceFloat64:
 		if v, err := param.Float64Value(); err == nil {
-			return db.updateResourceValue(strconv.FormatFloat(float64(v), 'f', -1, 64), deviceName, param.RO.Resource)
-		} else {
-			return err
+			err = db.updateResourceValue(strconv.FormatFloat(float64(v), 'f', -1, 64), deviceName, param.RO.Resource, true)
 		}
 	default:
-		return fmt.Errorf("resourceFloat.write: unknown device resource: %s", param.RO.Object)
+		err = fmt.Errorf("resourceFloat.write: unknown device resource: %s", param.RO.Object)
+	}
+
+	if err == nil {
+		return fmt.Errorf("resourceFloat.write: %v", err)
+	} else {
+		return err
 	}
 }

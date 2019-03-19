@@ -71,7 +71,7 @@ func (ri *resourceInt) value(db *db, ro *models.ResourceOperation, deviceName, d
 	if err != nil {
 		return result, err
 	}
-	err = db.updateResourceValue(result.ValueToString(), data.DeviceName, data.DeviceResourceName)
+	err = db.updateResourceValue(result.ValueToString(), data.DeviceName, data.DeviceResourceName, false)
 	return result, err
 }
 
@@ -152,10 +152,10 @@ func (ri *resourceInt) write(param *dsModels.CommandValue, deviceName string, db
 	case deviceResourceEnableRandomization:
 		v, err := param.BoolValue()
 		if err != nil {
-			return fmt.Errorf("resourceBool.write: %v", err)
+			return fmt.Errorf("resourceInt.write: %v", err)
 		}
-		if err := db.updateResourceEnableRandomization(v, deviceName, param.RO.Resource); err != nil {
-			return fmt.Errorf("resourceBool.write: %v", err)
+		if err := db.updateResourceRandomization(v, deviceName, param.RO.Resource); err != nil {
+			return fmt.Errorf("resourceInt.write: %v", err)
 		} else {
 			return nil
 		}
@@ -168,11 +168,15 @@ func (ri *resourceInt) write(param *dsModels.CommandValue, deviceName string, db
 	case deviceResourceInt64:
 		_, err = param.Int64Value()
 	default:
-		err = fmt.Errorf("resourceBool.write: unknown device resource: %s", param.RO.Object)
+		err = fmt.Errorf("resourceInt.write: unknown device resource: %s", param.RO.Object)
 	}
 
 	if err == nil {
-		return db.updateResourceValue(param.ValueToString(), deviceName, param.RO.Resource)
+		if err = db.updateResourceValue(param.ValueToString(), deviceName, param.RO.Resource, true); err != nil {
+			return fmt.Errorf("resourceInt.write: %v", err)
+		} else {
+			return nil
+		}
 	} else {
 		return err
 	}
