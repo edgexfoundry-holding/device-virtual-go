@@ -32,14 +32,22 @@ func (ri *resourceInt) value(db *db, ro *models.ResourceOperation, deviceName, d
 	switch dataType {
 	case typeInt8:
 		if enableRandomization {
-			newValueInt = randomInt(min, max)
+			if err == nil {
+				newValueInt = randomInt(min, max)
+			} else {
+				newValueInt = randomInt(int64(math.MinInt8), int64(math.MaxInt8))
+			}
 		} else if newValueInt, err = strconv.ParseInt(currentValue, 10, 8); err != nil {
 			return result, err
 		}
 		result, err = dsModels.NewInt8Value(ro, now, int8(newValueInt))
 	case typeInt16:
 		if enableRandomization {
-			newValueInt = randomInt(min, max)
+			if err == nil {
+				newValueInt = randomInt(min, max)
+			} else {
+				newValueInt = randomInt(int64(math.MinInt16), int64(math.MaxInt16))
+			}
 		} else if newValueInt, err = strconv.ParseInt(currentValue, 10, 16); err != nil {
 			return result, err
 		}
@@ -92,14 +100,12 @@ func parseIntMinimumMaximum(minimum, maximum, dataType string) (int64, int64, er
 		min, err1 = parseStrToInt(minimum, 8)
 		max, err2 = parseStrToInt(maximum, 8)
 		if max <= min || err1 != nil || err2 != nil {
-			min, max = int64(math.MinInt8), int64(math.MaxInt8)
 			err = fmt.Errorf("minimum:%s maximum:%s not in valid range, use default value", minimum, maximum)
 		}
 	case typeInt16:
 		min, err1 = parseStrToInt(minimum, 16)
 		max, err2 = parseStrToInt(maximum, 16)
 		if max <= min || err1 != nil || err2 != nil {
-			min, max = int64(math.MinInt16), int64(math.MaxInt16)
 			err = fmt.Errorf("minimum:%s maximum:%s not in valid range, use default value", minimum, maximum)
 		}
 	case typeInt32:

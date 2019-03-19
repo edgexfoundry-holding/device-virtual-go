@@ -30,14 +30,22 @@ func (ru *resourceUint) value(db *db, ro *models.ResourceOperation, deviceName, 
 	switch dataType {
 	case typeUint8:
 		if enableRandomization {
-			newValueUint = randomUint(min, max)
+			if err == nil {
+				newValueUint = randomUint(min, max)
+			} else {
+				newValueUint = randomUint(uint64(0), uint64(math.MaxUint8))
+			}
 		} else if newValueUint, err = strconv.ParseUint(currentValue, 10, 8); err != nil {
 			return result, err
 		}
 		result, err = dsModels.NewUint8Value(ro, now, uint8(newValueUint))
 	case typeUint16:
 		if enableRandomization {
-			newValueUint = randomUint(min, max)
+			if err == nil {
+				newValueUint = randomUint(min, max)
+			} else {
+				newValueUint = randomUint(uint64(0), uint64(math.MaxUint16))
+			}
 		} else if newValueUint, err = strconv.ParseUint(currentValue, 10, 16); err != nil {
 			return result, err
 		}
@@ -102,14 +110,12 @@ func parseUintMinimumMaximum(minimum, maximum, dataType string) (uint64, uint64,
 		min, err1 = parseStrToUint(minimum, 8)
 		max, err2 = parseStrToUint(maximum, 8)
 		if max <= min || err1 != nil || err2 != nil {
-			min, max = uint64(0), uint64(math.MaxUint8)
 			err = fmt.Errorf("minimum:%s maximum:%s not in valid range, use default value", minimum, maximum)
 		}
 	case typeUint16:
 		min, err1 = parseStrToUint(minimum, 16)
 		max, err2 = parseStrToUint(maximum, 16)
 		if max <= min || err1 != nil || err2 != nil {
-			min, max = uint64(0), uint64(math.MaxUint16)
 			err = fmt.Errorf("minimum:%s maximum:%s not in valid range, use default value", minimum, maximum)
 		}
 	case typeUint32:
