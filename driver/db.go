@@ -107,7 +107,7 @@ func (db *db) closeDb() error {
 }
 
 func (db *db) getVirtualResourceData(deviceName, deviceResourceName string) (bool, string, string, error) {
-	rows, err := db.query(SQL_SELECT, deviceName, deviceResourceName)
+	rows, err := db.query(SqlSelect, deviceName, deviceResourceName)
 	if err != nil {
 		return false, "", "", err
 	}
@@ -126,15 +126,22 @@ func (db *db) getVirtualResourceData(deviceName, deviceResourceName string) (boo
 	return enableRandomization, data.Value, data.DataType, nil
 }
 
-func (db *db) updateResourceValue(param, deviceName, deviceResourceName string) error {
-	if err := db.exec(SQL_UPDATE_VALUE, param, deviceName, deviceResourceName); err != nil {
+func (db *db) updateResourceValue(param, deviceName, deviceResourceName string, autoDisableRandomization bool) error {
+	var sqlStr string
+	if autoDisableRandomization {
+		sqlStr = SqlUpdateValueAndDisableRandomization
+	} else {
+		sqlStr = SqlUpdateValue
+	}
+
+	if err := db.exec(sqlStr, param, deviceName, deviceResourceName); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (db *db) updateResourceEnableRandomization(param bool, deviceName, deviceResourceName string) error {
-	if err := db.exec(SQL_UPDATE_ENABLERANDOMIZATION, param, deviceName, deviceResourceName); err != nil {
+func (db *db) updateResourceRandomization(param bool, deviceName, deviceResourceName string) error {
+	if err := db.exec(SqlUpdateRandomization, param, deviceName, deviceResourceName); err != nil {
 		return err
 	}
 	return nil

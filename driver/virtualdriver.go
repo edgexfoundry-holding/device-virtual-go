@@ -15,8 +15,8 @@ import (
 
 	sdk "github.com/edgexfoundry/device-sdk-go"
 	dsModels "github.com/edgexfoundry/device-sdk-go/pkg/models"
-	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logging"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	_ "modernc.org/ql/driver"
 )
 
@@ -63,12 +63,12 @@ func (d *VirtualDriver) Initialize(lc logger.LoggingClient, asyncCh chan<- *dsMo
 		}
 	}()
 
-	if err := d.db.exec(SQL_DROP_TABLE); err != nil {
+	if err := d.db.exec(SqlDropTable); err != nil {
 		d.lc.Info(fmt.Sprintf("Drop table failed: %v", err))
 		return err
 	}
 
-	if err := d.db.exec(SQL_CREATE_TABLE); err != nil {
+	if err := d.db.exec(SqlCreateTable); err != nil {
 		d.lc.Info(fmt.Sprintf("Create table failed: %v", err))
 		return err
 	}
@@ -87,7 +87,7 @@ func (d *VirtualDriver) Initialize(lc logger.LoggingClient, asyncCh chan<- *dsMo
 							dr.Properties.Value.Type <-> VIRTUAL_RESOURCE.DataType
 							dr.Properties.Value.DefaultValue <-> VIRTUAL_RESOURCE.Value
 						*/
-						if err := d.db.exec(SQL_INSERT, device.Name, dr.Name, dr.Name, true, dr.Properties.Value.Type, dr.Properties.Value.DefaultValue); err != nil {
+						if err := d.db.exec(SqlInsert, device.Name, dr.Name, dr.Name, true, dr.Properties.Value.Type, dr.Properties.Value.DefaultValue); err != nil {
 							d.lc.Info(fmt.Sprintf("Insert one row into db failed: %v", err))
 							return err
 						}

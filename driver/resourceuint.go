@@ -77,7 +77,7 @@ func (ru *resourceUint) value(db *db, ro *models.ResourceOperation, deviceName, 
 	if err != nil {
 		return result, err
 	}
-	err = db.updateResourceValue(result.ValueToString(), data.DeviceName, data.DeviceResourceName)
+	err = db.updateResourceValue(result.ValueToString(), data.DeviceName, data.DeviceResourceName, false)
 	return result, err
 }
 
@@ -142,7 +142,7 @@ func (ru *resourceUint) write(param *dsModels.CommandValue, deviceName string, d
 		if err != nil {
 			return fmt.Errorf("resourceUint.write: %v", err)
 		}
-		if err := db.updateResourceEnableRandomization(v, deviceName, param.RO.Resource); err != nil {
+		if err := db.updateResourceRandomization(v, deviceName, param.RO.Resource); err != nil {
 			return fmt.Errorf("resourceUint.write: %v", err)
 		} else {
 			return nil
@@ -160,7 +160,11 @@ func (ru *resourceUint) write(param *dsModels.CommandValue, deviceName string, d
 	}
 
 	if err == nil {
-		return db.updateResourceValue(param.ValueToString(), deviceName, param.RO.Resource)
+		if err = db.updateResourceValue(param.ValueToString(), deviceName, param.RO.Resource, true); err != nil {
+			return fmt.Errorf("resourceUint.write: %v", err)
+		} else {
+			return nil
+		}
 	} else {
 		return err
 	}
