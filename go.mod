@@ -1,10 +1,10 @@
 module github.com/edgexfoundry/device-virtual-go
 
 require (
-	github.com/edgexfoundry/device-sdk-go v0.0.0-20190316170723-8e7a6966fd13
-	github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190315142420-7a2734aa6c01
+	github.com/edgexfoundry/device-sdk-go v0.0.0-20190329084247-225c3a75cce1
+	github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190327230013-e53159cfbe2c
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
-	github.com/remyoudompheng/bigfft v0.0.0-20170806203942-52369c62f446 // indirect
+	github.com/remyoudompheng/bigfft v0.0.0-20190321074620-2f0d2b0e0001 // indirect
 	modernc.org/b v1.0.0 // indirect
 	modernc.org/db v1.0.0 // indirect
 	modernc.org/file v1.0.0 // indirect
